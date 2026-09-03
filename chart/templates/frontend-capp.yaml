@@ -1,0 +1,35 @@
+apiVersion: rcs.dana.io/v1alpha1
+kind: Capp
+metadata:
+  name: frontend
+  namespace: {{ .Release.Namespace }}
+spec:
+  configurationSpec:
+    template:
+      spec:
+        containers:
+          - name: frontend
+            image: {{ .Values.images.frontend }}
+            env:
+              - name: ORDERS_SERVICE_URL
+                value: https://{{ .Values.route.ordersHostname }}
+
+  scaleSpec:
+    metric: concurrency
+    minReplicas: {{ .Values.scale.minReplicas }}
+    maxReplicas: {{ .Values.scale.maxReplicas }}
+    scaleDelaySeconds: {{ .Values.scale.scaleDelaySeconds }}
+
+  routeSpec:
+    hostname: {{ .Values.route.frontendHostname }}
+    tlsEnabled: {{ .Values.route.tlsEnabled }}
+    trafficTarget:
+      percent: 100
+      latestRevision: true
+
+  logSpec:
+    type: elastic-datastream
+    host: {{ .Values.elastic.host | quote }}
+    user: {{ .Values.elastic.user | quote }}
+    passwordSecret: {{ .Values.elastic.secret.name }}
+    passwordKey: {{ .Values.elastic.passwordKey }}

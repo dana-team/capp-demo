@@ -1,0 +1,62 @@
+apiVersion: rcs.dana.io/v1alpha1
+kind: Capp
+metadata:
+  name: orders-service
+  namespace: {{ .Release.Namespace }}
+spec:
+  configurationSpec:
+    template:
+      spec:
+        containers:
+          - name: orders-service
+            image: {{ .Values.images.ordersService }}
+            env:
+              - name: KAFKA_BROKERS
+                value: {{ join "," .Values.kafka.brokers | quote }}
+              - name: KAFKA_ORDERS_TOPIC
+                value: {{ .Values.kafka.ordersTopic }}
+              - name: FRONTEND_ORIGIN
+                value: https://{{ .Values.route.frontendHostname }}
+              - name: KAFKA_SASL_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.kafka.secret.name }}
+                    key: user
+              - name: KAFKA_SASL_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.kafka.secret.name }}
+                    key: password
+              - name: KAFKA_SASL_MECHANISM
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.kafka.secret.name }}
+                    key: sasl.mechanism
+
+  scaleSpec:
+    metric: concurrency
+    minReplicas: {{ .Values.scale.minReplicas }}
+    maxReplicas: {{ .Values.scale.maxReplicas }}
+    scaleDelaySeconds: {{ .Values.scale.scaleDelaySeconds }}
+
+  routeSpec:
+    hostname: {{ .Values.route.ordersHostname }}
+    tlsEnabled: {{ .Values.route.tlsEnabled }}
+    trafficTarget:
+      percent: 100
+      latestRevision: true
+
+  logSpec:
+    type: elastic-datastream
+    host: {{ .Values.elastic.host | quote }}
+    user: {{ .Values.elastic.user | quote }}
+    passwordSecret: {{ .Values.elastic.secret.name }}
+    passwordKey: {{ .Values.elastic.passwordKey }}
+
+  eventSourcesSpec:
+    sources:
+      - name: daily-report
+        uri: /report
+        pingSourceConfiguration:
+          schedule: "0 9 * * *"
+          data: '{"trigger":"daily-report"}'

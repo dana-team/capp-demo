@@ -1,0 +1,58 @@
+apiVersion: rcs.dana.io/v1alpha1
+kind: Capp
+metadata:
+  name: kitchen-service
+  namespace: {{ .Release.Namespace }}
+spec:
+  configurationSpec:
+    template:
+      spec:
+        containers:
+          - name: kitchen-service
+            image: {{ .Values.images.kitchenService }}
+            env:
+              - name: KAFKA_BROKERS
+                value: {{ join "," .Values.kafka.brokers | quote }}
+              - name: KAFKA_STATUS_TOPIC
+                value: {{ .Values.kafka.statusTopic }}
+              - name: KAFKA_SASL_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.kafka.secret.name }}
+                    key: user
+              - name: KAFKA_SASL_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.kafka.secret.name }}
+                    key: password
+              - name: KAFKA_SASL_MECHANISM
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.kafka.secret.name }}
+                    key: sasl.mechanism
+
+  scaleSpec:
+    metric: concurrency
+    minReplicas: {{ .Values.scale.minReplicas }}
+    maxReplicas: {{ .Values.scale.maxReplicas }}
+    scaleDelaySeconds: {{ .Values.scale.scaleDelaySeconds }}
+
+  logSpec:
+    type: elastic-datastream
+    host: {{ .Values.elastic.host | quote }}
+    user: {{ .Values.elastic.user | quote }}
+    passwordSecret: {{ .Values.elastic.secret.name }}
+    passwordKey: {{ .Values.elastic.passwordKey }}
+
+  eventSourcesSpec:
+    sources:
+      - name: orders-consumer
+        kafkaSourceConfiguration:
+          bootstrapServers:
+            {{- range .Values.kafka.brokers }}
+            - {{ . | quote }}
+            {{- end }}
+          topics:
+            - {{ .Values.kafka.ordersTopic }}
+          secretRef:
+            name: {{ .Values.kafka.secret.name }}

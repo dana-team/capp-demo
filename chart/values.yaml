@@ -1,0 +1,39 @@
+images:
+  frontend: ghcr.io/YOUR_ORG/danaeats-frontend:latest
+  ordersService: ghcr.io/YOUR_ORG/danaeats-orders-service:latest
+  kitchenService: ghcr.io/YOUR_ORG/danaeats-kitchen-service:latest
+  notificationsService: ghcr.io/YOUR_ORG/danaeats-notifications-service:latest
+
+route:
+  frontendHostname: danaeats.example.com
+  ordersHostname: orders.danaeats.example.com
+  tlsEnabled: true
+
+scale:
+  minReplicas: 0
+  maxReplicas: 5
+  scaleDelaySeconds: 60
+
+# Native Capp KafkaSource consumption only supports SASL over plaintext (no TLS) - point
+# these at a listener on your managed Kafka cluster that allows SASL_PLAINTEXT.
+kafka:
+  brokers:
+    - YOUR-KAFKA-BROKER:9092
+  ordersTopic: orders
+  statusTopic: order-status
+  secret:
+    # set create: false and point name at a Secret you already manage to reuse existing credentials
+    create: true
+    name: danaeats-kafka-credentials
+    user: CHANGE_ME
+    password: CHANGE_ME
+    saslMechanism: PLAIN
+
+elastic:
+  host: "https://YOUR-ELASTIC-HOST:9200/_bulk"
+  user: elastic
+  passwordKey: password
+  secret:
+    create: true
+    name: danaeats-elastic-credentials
+    password: CHANGE_ME
