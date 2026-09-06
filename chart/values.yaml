@@ -1,12 +1,12 @@
 images:
-  frontend: ghcr.io/YOUR_ORG/danaeats-frontend:latest
-  ordersService: ghcr.io/YOUR_ORG/danaeats-orders-service:latest
-  kitchenService: ghcr.io/YOUR_ORG/danaeats-kitchen-service:latest
-  notificationsService: ghcr.io/YOUR_ORG/danaeats-notifications-service:latest
+  frontend: ghcr.io/dana-team/capp-demo/frontend:latest
+  ordersService: ghcr.io/dana-team/capp-demo/orders-service:latest
+  kitchenService: ghcr.io/dana-team/capp-demo/kitchen-service:latest
+  notificationsService: ghcr.io/dana-team/capp-demo/notifications-service:latest
 
 route:
-  frontendHostname: danaeats.example.com
-  ordersHostname: orders.danaeats.example.com
+  frontendHostname: mac-dana.example.com
+  ordersHostname: orders.mac-dana.example.com
   tlsEnabled: true
 
 scale:
@@ -24,7 +24,7 @@ kafka:
   secret:
     # set create: false and point name at a Secret you already manage to reuse existing credentials
     create: true
-    name: danaeats-kafka-credentials
+    name: mac-dana-kafka-credentials
     user: CHANGE_ME
     password: CHANGE_ME
     saslMechanism: PLAIN
@@ -35,5 +35,5 @@ elastic:
   passwordKey: password
   secret:
     create: true
-    name: danaeats-elastic-credentials
+    name: mac-dana-elastic-credentials
     password: CHANGE_ME

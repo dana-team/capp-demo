@@ -1,6 +1,6 @@
 apiVersion: v2
-name: danaeats-demo
-description: DanaEats - a Capp feature demo (microservices, native Kafka eventing, Elastic log shipping)
+name: mac-dana
+description: Mac Dana - a Capp feature demo (order a burger, pick your add-ons) showcasing microservices, native Kafka eventing, Elastic log shipping
 type: application
 version: 0.1.0
 appVersion: "1.0.0"
